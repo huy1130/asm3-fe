@@ -1,12 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
+const parseError = (err, fallback) => {
+  const data = err.response?.data;
+  if (!data) return fallback;
+  if (typeof data.error === 'string') return data.error;
+  if (typeof data.error?.message === 'string') return data.error.message;
+  if (typeof data.message === 'string') return data.message;
+  return fallback;
+};
+
 export const fetchQuizzes = createAsyncThunk('quizzes/fetchAll', async (_, { rejectWithValue }) => {
   try {
     const res = await api.get('/quizzes');
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fetch quizzes');
+    return rejectWithValue(parseError(err, 'Failed to fetch quizzes'));
   }
 });
 
@@ -15,7 +24,7 @@ export const fetchQuizById = createAsyncThunk('quizzes/fetchById', async (id, { 
     const res = await api.get(`/quizzes/${id}`);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fetch quiz');
+    return rejectWithValue(parseError(err, 'Failed to fetch quiz'));
   }
 });
 
@@ -24,7 +33,7 @@ export const createQuiz = createAsyncThunk('quizzes/create', async (data, { reje
     const res = await api.post('/quizzes', data);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to create quiz');
+    return rejectWithValue(parseError(err, 'Failed to create quiz'));
   }
 });
 
@@ -33,7 +42,7 @@ export const updateQuiz = createAsyncThunk('quizzes/update', async ({ id, data }
     const res = await api.put(`/quizzes/${id}`, data);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to update quiz');
+    return rejectWithValue(parseError(err, 'Failed to update quiz'));
   }
 });
 
@@ -42,7 +51,7 @@ export const deleteQuiz = createAsyncThunk('quizzes/delete', async (id, { reject
     await api.delete(`/quizzes/${id}`);
     return id;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to delete quiz');
+    return rejectWithValue(parseError(err, 'Failed to delete quiz'));
   }
 });
 

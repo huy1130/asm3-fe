@@ -1,12 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
+const parseError = (err, fallback) => {
+  const data = err.response?.data;
+  if (!data) return fallback;
+  if (typeof data.error === 'string') return data.error;
+  if (typeof data.error?.message === 'string') return data.error.message;
+  if (typeof data.message === 'string') return data.message;
+  return fallback;
+};
+
 export const fetchQuestions = createAsyncThunk('questions/fetchAll', async (_, { rejectWithValue }) => {
   try {
     const res = await api.get('/questions');
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to fetch questions');
+    return rejectWithValue(parseError(err, 'Failed to fetch questions'));
   }
 });
 
@@ -15,7 +24,7 @@ export const createQuestion = createAsyncThunk('questions/create', async (data, 
     const res = await api.post('/questions', data);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to create question');
+    return rejectWithValue(parseError(err, 'Failed to create question'));
   }
 });
 
@@ -24,7 +33,7 @@ export const updateQuestion = createAsyncThunk('questions/update', async ({ id, 
     const res = await api.put(`/questions/${id}`, data);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to update question');
+    return rejectWithValue(parseError(err, 'Failed to update question'));
   }
 });
 
@@ -33,7 +42,7 @@ export const deleteQuestion = createAsyncThunk('questions/delete', async (id, { 
     await api.delete(`/questions/${id}`);
     return id;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Failed to delete question');
+    return rejectWithValue(parseError(err, 'Failed to delete question'));
   }
 });
 

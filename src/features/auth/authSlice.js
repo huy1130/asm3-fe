@@ -1,13 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
+const parseError = (err, fallback) => {
+  const data = err.response?.data;
+  if (!data) return fallback;
+  if (typeof data.error === 'string') return data.error;
+  if (typeof data.error?.message === 'string') return data.error.message;
+  if (typeof data.message === 'string') return data.message;
+  return fallback;
+};
+
 export const login = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
   try {
     const res = await api.post('/auth/login', credentials);
     localStorage.setItem('token', res.data.token);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Login failed');
+    return rejectWithValue(parseError(err, 'Login failed'));
   }
 });
 
@@ -16,7 +25,7 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
     const res = await api.post('/auth/register', userData);
     return res.data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.error || 'Register failed');
+    return rejectWithValue(parseError(err, 'Register failed'));
   }
 });
 
