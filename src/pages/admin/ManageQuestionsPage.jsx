@@ -6,6 +6,7 @@ import {
   updateQuestion,
   deleteQuestion,
 } from '../../features/questions/questionSlice';
+import SuccessModal from '../../components/SuccessModal';
 
 const emptyForm = {
   text: '',
@@ -24,6 +25,7 @@ export default function ManageQuestionsPage() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     dispatch(fetchQuestions());
@@ -99,14 +101,18 @@ export default function ManageQuestionsPage() {
     setSaving(false);
     if (!action.error) {
       setShowModal(false);
+      setSuccessMessage(editId ? 'Question updated successfully.' : 'Question created successfully.');
     } else {
       setFormError(action.payload || 'Failed to save');
     }
   };
 
   const handleDelete = async (id) => {
-    await dispatch(deleteQuestion(id));
+    const action = await dispatch(deleteQuestion(id));
     setDeleteConfirm(null);
+    if (!action.error) {
+      setSuccessMessage('Question deleted successfully.');
+    }
   };
 
   return (
@@ -298,6 +304,12 @@ export default function ManageQuestionsPage() {
           </div>
         </div>
       )}
+
+      <SuccessModal
+        show={!!successMessage}
+        message={successMessage}
+        onClose={() => setSuccessMessage(null)}
+      />
 
       {/* Delete Confirm Modal */}
       {deleteConfirm && (

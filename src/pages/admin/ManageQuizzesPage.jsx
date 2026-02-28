@@ -7,6 +7,7 @@ import {
   deleteQuiz,
 } from '../../features/quizzes/quizSlice';
 import { fetchQuestions } from '../../features/questions/questionSlice';
+import SuccessModal from '../../components/SuccessModal';
 
 const emptyForm = { title: '', description: '', questions: [] };
 
@@ -21,6 +22,7 @@ export default function ManageQuizzesPage() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     dispatch(fetchQuizzes());
@@ -72,14 +74,18 @@ export default function ManageQuizzesPage() {
     if (!action.error) {
       setShowModal(false);
       dispatch(fetchQuizzes());
+      setSuccessMessage(editId ? 'Quiz updated successfully.' : 'Quiz created successfully.');
     } else {
       setFormError(action.payload || 'Failed to save');
     }
   };
 
   const handleDelete = async (id) => {
-    await dispatch(deleteQuiz(id));
+    const action = await dispatch(deleteQuiz(id));
     setDeleteConfirm(null);
+    if (!action.error) {
+      setSuccessMessage('Quiz deleted successfully.');
+    }
   };
 
   return (
@@ -287,6 +293,12 @@ export default function ManageQuizzesPage() {
           </div>
         </div>
       )}
+
+      <SuccessModal
+        show={!!successMessage}
+        message={successMessage}
+        onClose={() => setSuccessMessage(null)}
+      />
 
       {/* Delete Confirm */}
       {deleteConfirm && (
